@@ -1,0 +1,14 @@
+{% extends 'core/base.html' %}
+{% load ui_tags %}
+{% block title %}Proof — @{{ profile_user.username }}{% endblock %}
+{% block content %}
+<section class="profile-head">
+  <div class="profile-avatar">{{ profile_user.username|slice:":1"|upper }}</div>
+  <div class="profile-copy"><h1>@{{ profile_user.username }}</h1><div class="profile-stats"><span><strong>{{ followers_count }}</strong> {{ t.followers }}</span><span><strong>{{ following_count }}</strong> {{ t.following }}</span><span><strong>{{ claims|length }}</strong> {{ t.recent_claims }}</span></div></div>
+  {% if user.is_authenticated and user != profile_user %}<form method="post" action="{% url 'follow_toggle' profile_user.username %}">{% csrf_token %}<button class="btn {% if is_following %}btn-secondary{% else %}btn-primary{% endif %}" type="submit">{% if is_following %}{{ t.unfollow }}{% else %}{{ t.follow }}{% endif %}</button></form>{% endif %}
+</section>
+<section class="profile-grid">
+  <div><div class="section-head"><h2>{{ t.recent_claims }}</h2></div><div class="claim-stack">{% for claim in claims %}{% include 'core/claim_card.html' with claim=claim %}{% empty %}<div class="empty-state"><h3>{{ t.no_claims }}</h3></div>{% endfor %}</div></div>
+  <aside class="sidebar"><div class="side-card sticky-card"><h3>{{ t.topic_scores }}</h3>{% for score in scores %}<div class="score-row"><div><strong>{{ score.topic|topic_name:UI_LANG }}</strong><small>{{ score.resolved_predictions }} {{ t.resolved_predictions }}</small></div><span class="score-number">{{ score.score|floatformat:1 }}</span></div>{% empty %}<p class="tiny-note">{% if UI_LANG == 'ar' %}لا يوجد سجل مصداقية محسوم بعد.{% else %}No resolved credibility history yet.{% endif %}</p>{% endfor %}</div></aside>
+</section>
+{% endblock %}

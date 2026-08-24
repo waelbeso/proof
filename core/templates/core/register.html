@@ -1,0 +1,5 @@
+{% extends 'core/base.html' %}
+{% block title %}Proof — {{ t.register }}{% endblock %}
+{% block content %}
+<div class="auth-layout"><div class="auth-brand-panel"><div class="big-mark">P</div><h1>{{ t.brand_tagline }}</h1><p>Build a reputation that can be checked.</p></div><div class="form-card auth-card"><h1>{{ t.create_account }}</h1><form method="post" class="stack-form">{% csrf_token %}{% for field in form %}<div class="field-group"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}</div>{% endfor %}<button class="btn btn-primary full" type="submit">{{ t.create_account }}</button></form><p class="auth-foot">{{ t.already_account }} <a href="{% url 'login' %}">{{ t.sign_in }}</a></p></div></div>
+{% endblock %}

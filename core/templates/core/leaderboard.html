@@ -1,0 +1,7 @@
+{% extends 'core/base.html' %}
+{% load ui_tags %}
+{% block title %}Proof — {{ t.leaderboard }}{% endblock %}
+{% block content %}
+<section class="hero-row compact-hero"><div><p class="eyebrow">CALIBRATED REPUTATION</p><h1>{{ t.leaderboard }}</h1></div></section>
+<div class="leader-layout"><aside class="sidebar"><div class="side-card"><h3>{{ t.topic }}</h3><a class="topic-filter {% if not selected_topic %}active{% endif %}" href="{% url 'leaderboard' %}">{{ t.all_topics }}</a>{% for topic in topics %}<a class="topic-filter {% if selected_topic == topic.slug %}active{% endif %}" href="?topic={{ topic.slug }}">{{ topic|topic_name:UI_LANG }}</a>{% endfor %}</div></aside><div class="table-card"><div class="table-row table-head"><span>#</span><span>{{ t.member }}</span><span>{{ t.topic }}</span><span>{{ t.resolved_predictions }}</span><span>{{ t.score }}</span></div>{% for score in scores %}<a class="table-row" href="{% url 'profile' score.user.username %}"><span>{{ forloop.counter }}</span><span>@{{ score.user.username }}</span><span>{{ score.topic|topic_name:UI_LANG }}</span><span>{{ score.resolved_predictions }}</span><strong>{{ score.score|floatformat:1 }}</strong></a>{% empty %}<div class="empty-state compact-empty"><h3>{% if UI_LANG == 'ar' %}لا توجد درجات بعد.{% else %}No scores yet.{% endif %}</h3></div>{% endfor %}</div></div>
+{% endblock %}

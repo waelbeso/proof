@@ -1,0 +1,38 @@
+{% extends 'core/base.html' %}
+{% load ui_tags %}
+{% block title %}Proof — {{ t.home }}{% endblock %}
+{% block content %}
+<section class="hero-row">
+  <div>
+    <p class="eyebrow">PROOF NETWORK</p>
+    <h1>{{ t.feed_title }}</h1>
+    <p class="lede">{{ t.feed_subtitle }}</p>
+  </div>
+  {% if user.is_authenticated %}<a class="btn btn-primary" href="{% url 'claim_create' %}">+ {{ t.new_claim }}</a>{% endif %}
+</section>
+
+<section class="feed-layout">
+  <div class="feed-main">
+    <div class="feed-tabs">
+      <a class="tab {% if feed_mode != 'following' %}active{% endif %}" href="?{% if selected_topic %}topic={{ selected_topic }}&{% endif %}feed=global">{{ t.global_feed }}</a>
+      {% if user.is_authenticated %}<a class="tab {% if feed_mode == 'following' %}active{% endif %}" href="?{% if selected_topic %}topic={{ selected_topic }}&{% endif %}feed=following">{{ t.following_feed }}</a>{% endif %}
+    </div>
+    <div class="ranking-note"><strong>{{ t.ranked_feed }}</strong><span>{{ t.ranking_note }}</span></div>
+    <div class="claim-stack">
+      {% for claim in claims %}{% include 'core/claim_card.html' with claim=claim %}
+      {% empty %}
+      <div class="empty-state"><div class="empty-icon">∅</div><h3>{{ t.no_claims }}</h3>{% if user.is_authenticated %}<a href="{% url 'claim_create' %}" class="btn btn-primary">{{ t.start_claim }}</a>{% endif %}</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="side-card sticky-card">
+      <h3>{{ t.topic }}</h3>
+      <a class="topic-filter {% if not selected_topic %}active{% endif %}" href="?feed={{ feed_mode }}">{{ t.all_topics }}</a>
+      {% for topic in topics %}<a class="topic-filter {% if selected_topic == topic.slug %}active{% endif %}" href="?topic={{ topic.slug }}&feed={{ feed_mode }}">{{ topic|topic_name:UI_LANG }}</a>{% endfor %}
+      {% if user.is_authenticated and feed_mode == 'following' %}<p class="tiny-note">{{ t.discovery_note }}</p>{% endif %}
+    </div>
+  </aside>
+</section>
+{% endblock %}

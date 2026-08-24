@@ -1,0 +1,32 @@
+{% load ui_tags %}
+<article class="claim-card">
+  <div class="claim-meta-row">
+    <a class="user-line" href="{% url 'profile' claim.author.username %}">
+      <span class="mini-avatar">{{ claim.author.username|slice:":1"|upper }}</span>
+      <span>@{{ claim.author.username }}</span>
+    </a>
+    <span class="dot">·</span>
+    <time datetime="{{ claim.created_at|date:'c' }}">{{ claim.created_at|timesince }}</time>
+    <span class="topic-chip">{{ claim.topic|topic_name:UI_LANG }}</span>
+  </div>
+  <a class="claim-link" href="{% url 'claim_detail' claim.pk %}">
+    <h2 class="claim-text">{{ claim.text }}</h2>
+  </a>
+  <div class="claim-labels">
+    <span class="pill kind-{{ claim.kind }}">{{ claim.kind|kind_label:UI_LANG }}</span>
+    <span class="pill status-{{ claim.status }}">{{ claim.status|status_label:UI_LANG }}</span>
+    {% if claim.kind == 'prediction' and claim.resolves_at %}<span class="subtle">{{ t.prediction_due }}: {{ claim.resolves_at|date:"Y-m-d H:i" }}</span>{% endif %}
+  </div>
+  {% if claim.feed_reasons %}
+  <div class="feed-reasons" aria-label="{{ t.why_shown }}">
+    {% for reason in claim.feed_reasons %}<span class="reason-chip">{{ reason|feed_reason_label:UI_LANG }}</span>{% endfor %}
+  </div>
+  {% endif %}
+  <div class="claim-stats">
+    <span><strong>{{ claim.evidence_count|default:0 }}</strong> {{ t.evidence }}</span>
+    <span class="positive">↑ {{ claim.support_count|default:0 }} {{ t.supports }}</span>
+    <span class="negative">↓ {{ claim.contradict_count|default:0 }} {{ t.contradicts }}</span>
+    <span><strong>{{ claim.true_count|default:0 }}</strong> {{ t.true }}</span>
+    <span><strong>{{ claim.false_count|default:0 }}</strong> {{ t.false }}</span>
+  </div>
+</article>

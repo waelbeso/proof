@@ -1,0 +1,107 @@
+{% extends 'core/base.html' %}
+{% load ui_tags %}
+{% block title %}Proof — {{ t.claim_detail }}{% endblock %}
+{% block content %}
+<a class="back-link" href="{% url 'home' %}">← {{ t.back_feed }}</a>
+<section class="detail-grid">
+  <div>
+    <article class="claim-card featured-claim">
+      <div class="claim-meta-row">
+        <a class="user-line" href="{% url 'profile' claim.author.username %}"><span class="mini-avatar">{{ claim.author.username|slice:":1"|upper }}</span><span>@{{ claim.author.username }}</span></a>
+        <span class="topic-chip">{{ claim.topic|topic_name:UI_LANG }}</span>
+      </div>
+      <h1 class="detail-claim-text">{{ claim.text }}</h1>
+      <div class="claim-labels"><span class="pill kind-{{ claim.kind }}">{{ claim.kind|kind_label:UI_LANG }}</span><span class="pill status-{{ claim.status }}">{{ claim.status|status_label:UI_LANG }}</span></div>
+      <div class="claim-stats"><span><strong>{{ claim.evidence_count }}</strong> {{ t.evidence }}</span><span class="positive">↑ {{ claim.support_count }} {{ t.supports }}</span><span class="negative">↓ {{ claim.contradict_count }} {{ t.contradicts }}</span><span>• {{ claim.context_count }} {{ t.context }}</span></div>
+    </article>
+
+    <div class="section-head"><div><p class="eyebrow">EVIDENCE</p><h2>{{ t.evidence }}</h2></div>{% if user.is_authenticated %}<a class="btn btn-secondary" href="{% url 'evidence_create' claim.pk %}">+ {{ t.add_evidence }}</a>{% endif %}</div>
+    <div class="evidence-overview" aria-label="{{ t.evidence_summary }}">
+      <strong>{{ t.evidence_summary }}</strong>
+      <span class="overview-chip support">{{ claim.support_count }} {{ t.supports }}</span>
+      <span class="overview-chip contradict">{{ claim.contradict_count }} {{ t.contradicts }}</span>
+      <span class="overview-chip context">{{ claim.context_count }} {{ t.context }}</span>
+    </div>
+
+    <div class="evidence-stack">
+      {% for ev in evidence_list %}
+      <article class="evidence-card evidence-card-v2 stance-{{ ev.stance }}">
+        <div class="evidence-head evidence-head-v2">
+          <span class="stance-badge stance-badge-{{ ev.stance }}">{{ ev.stance|stance_label:UI_LANG }}</span>
+          <span class="evidence-author">{{ t.submitted_by }} <a href="{% url 'profile' ev.submitted_by.username %}">@{{ ev.submitted_by.username }}</a></span>
+        </div>
+
+        <div class="evidence-note-block">
+          <span class="micro-label">{{ t.evidence_note }}</span>
+          <p>{{ ev.note }}</p>
+        </div>
+
+        {% if ev.source_url %}
+        <section class="source-card source-card-v2">
+          <div class="source-card-head">
+            <div class="source-identity">
+              <span class="micro-label">{{ t.source_details }}</span>
+              <a class="source-title" href="{{ ev.source_url }}" target="_blank" rel="noopener noreferrer">{{ ev.source_title|default:ev.source_domain|default:ev.source_url }}</a>
+              {% if ev.source_domain %}<span class="source-domain">{{ ev.source_domain }}</span>{% endif %}
+            </div>
+            <a class="source-open" href="{{ ev.source_url }}" target="_blank" rel="noopener noreferrer">↗ {{ t.open_source }}</a>
+          </div>
+
+          <div class="source-facts">
+            {% if ev.source_publisher %}<span><b>{{ t.publisher }}</b>{{ ev.source_publisher }}</span>{% endif %}
+            {% if ev.published_at %}<span><b>{{ t.source_date }}</b>{{ ev.published_at|date:"Y-m-d" }}</span>{% endif %}
+            <span><b>{{ t.source }}</b><span class="verify-badge status-{{ ev.source_verification_status }}">{{ ev.source_verification_status|source_status_label:UI_LANG }}</span></span>
+          </div>
+
+          {% if ev.source_quality_score != None %}
+          <div class="quality-panel">
+            <div class="quality-row">
+              <div>
+                <span class="micro-label">{{ t.provenance_quality }}</span>
+                <strong>{{ ev.source_quality_score|source_quality_band:UI_LANG }}</strong>
+              </div>
+              <strong class="quality-percent">{{ ev.source_quality_score|source_quality_percent }}%</strong>
+            </div>
+            <div class="quality-meter" aria-hidden="true"><span style="width:{{ ev.source_quality_score|source_quality_percent }}%"></span></div>
+            <p class="quality-note">{{ t.provenance_note }}</p>
+            {% if ev.source_quality_reasons %}<div class="quality-reasons">{% for reason in ev.source_quality_reasons %}<span>{{ reason|source_reason_label:UI_LANG }}</span>{% endfor %}</div>{% endif %}
+          </div>
+          {% endif %}
+        </section>
+        {% endif %}
+
+        <div class="evidence-footer evidence-footer-v2">
+          <span><strong>{{ ev.vote_score|default:0 }}</strong> {{ t.useful }}</span>
+          {% if user.is_authenticated %}<div class="vote-buttons"><form method="post" action="{% url 'evidence_vote' ev.pk %}">{% csrf_token %}<input type="hidden" name="value" value="1"><button type="submit" class="vote-btn {% if ev.user_vote == 1 %}selected{% endif %}" aria-label="{{ t.useful }}">↑</button></form><form method="post" action="{% url 'evidence_vote' ev.pk %}">{% csrf_token %}<input type="hidden" name="value" value="-1"><button type="submit" class="vote-btn {% if ev.user_vote == -1 %}selected{% endif %}" aria-label="{{ t.not_useful }}">↓</button></form></div>{% endif %}
+        </div>
+      </article>
+      {% empty %}<div class="empty-state compact-empty"><h3>{{ t.empty_evidence }}</h3></div>{% endfor %}
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="side-card sticky-card">
+      <h3>{{ t.community_position }}</h3>
+      <div class="position-bars">
+        <div><span>{{ t.true }}</span><strong>{{ claim.true_count }}</strong></div>
+        <div><span>{{ t.false }}</span><strong>{{ claim.false_count }}</strong></div>
+        <div><span>{{ t.unsure }}</span><strong>{{ claim.unsure_count }}</strong></div>
+      </div>
+      {% if user.is_authenticated %}
+      <hr>
+      <h4>{{ t.your_position }}</h4>
+      <form method="post" action="{% url 'position_update' claim.pk %}" class="position-form">{% csrf_token %}
+        <div class="segmented">
+          <label><input type="radio" name="position" value="true" {% if current_position.position == 'true' %}checked{% endif %}><span>{{ t.true }}</span></label>
+          <label><input type="radio" name="position" value="false" {% if current_position.position == 'false' %}checked{% endif %}><span>{{ t.false }}</span></label>
+          <label><input type="radio" name="position" value="unsure" {% if current_position.position == 'unsure' or not current_position %}checked{% endif %}><span>{{ t.unsure }}</span></label>
+        </div>
+        <label class="range-label">{{ t.confidence }} <strong data-range-output>{{ current_position.confidence|default:50 }}%</strong></label>
+        <input data-range type="range" name="confidence" min="0" max="100" value="{{ current_position.confidence|default:50 }}">
+        <button class="btn btn-primary full" type="submit">{{ t.save_position }}</button>
+      </form>
+      {% else %}<a class="btn btn-primary full" href="{% url 'login' %}?next={{ request.path|urlencode }}">{{ t.login }}</a>{% endif %}
+    </div>
+  </aside>
+</section>
+{% endblock %}

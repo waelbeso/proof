@@ -1,0 +1,5 @@
+{% extends 'core/base.html' %}
+{% block title %}Proof — {{ t.login }}{% endblock %}
+{% block content %}
+<div class="auth-layout"><div class="auth-brand-panel"><div class="big-mark">P</div><h1>{{ t.brand_tagline }}</h1><p>Claims → Evidence → Credibility</p></div><div class="form-card auth-card"><h1>{{ t.sign_in }}</h1><form method="post" class="stack-form">{% csrf_token %}<input type="hidden" name="next" value="{{ next }}"><div class="field-group"><label>{{ t.username }}</label><input class="input" type="text" name="username" autofocus required></div><div class="field-group"><label>{{ t.password }}</label><input class="input" type="password" name="password" required></div>{% if form.errors %}<p class="field-error">{% if UI_LANG == 'ar' %}اسم المستخدم أو كلمة المرور غير صحيحة.{% else %}Invalid username or password.{% endif %}</p>{% endif %}<button class="btn btn-primary full" type="submit">{{ t.login }}</button></form><p class="auth-foot">{{ t.new_here }} <a href="{% url 'register' %}">{{ t.create_account }}</a></p></div></div>
+{% endblock %}
