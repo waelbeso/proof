@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: proof
+      POSTGRES_USER: proof
+      POSTGRES_PASSWORD: proof
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+  web:
+    build: .
+    command: sh -c "python manage.py migrate --noinput && python manage.py seed_topics && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+  worker:
+    build: .
+    command: celery -A proof worker -l info
+    volumes:
+      - .:/app
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+volumes:
+  pgdata:
