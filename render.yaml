@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: proof-demo
+    runtime: python
+    plan: free
+    buildCommand: bash build.sh
+    startCommand: gunicorn proof.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: proof-demo-db
+          property: connectionString
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "0"
+      - key: DJANGO_ALLOWED_HOSTS
+        value: ".onrender.com,localhost,127.0.0.1"
+
+databases:
+  - name: proof-demo-db
+    plan: free
+    databaseName: proof
+    user: proof
